@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Collide
   - Team1
+  - Team2
+  - Team1_Projectile
+  - Team2_Projectile
   layers:
   - Default
   - TransparentFX
