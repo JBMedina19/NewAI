@@ -11,6 +11,7 @@ public enum AI_Types
     Mage,
     Ninja
 }
+
 public class NewAiBehaviour : MonoBehaviour
 {
     Dictionary<AI_Types, int> aiModelIndices = new Dictionary<AI_Types, int>()
@@ -18,29 +19,33 @@ public class NewAiBehaviour : MonoBehaviour
         { AI_Types.Archer, 0 },
         { AI_Types.Warrior, 1 },
         { AI_Types.Mage, 2 },
-        {AI_Types.Ninja,3 }
+        { AI_Types.Ninja, 3 }
     };
-    [Header("State")]
-    public string currentState;
+
+    [Header("State")] public string currentState;
     public AI_Types aiTypes;
-    [Header("References")]
-    public List<GameObject> aiModel;
+    [Header("References")] public List<GameObject> aiModel;
     public Animator animator;
     public NavMeshAgent agent;
-    [Header("AttackRange")]
-    public float range;
-    [Header("EnemyValues")]
-    public float health;
+    [Header("AttackRange")] public float range;
+    [Header("EnemyValues")] public float health;
     public float damage;
     public new string tag = "Team1";
-    [Header("VFX")]
-    public GameObject Arrow;
+    [Header("VFX")] public GameObject Arrow;
     public Transform spawnArcherFX;
-    // Start is called before the first frame update
+
+    private string _projectileTag;
+
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        Action<AI_Types> activateAiModel = (AI_Types aiType) => 
+
+        if (tag == "Team2")
+            _projectileTag = "Team2_Projectile";
+        if (tag == "Team1")
+            _projectileTag = "Team1_Projectile";
+
+        Action<AI_Types> activateAiModel = (AI_Types aiType) =>
         {
             aiModel[aiModelIndices[aiType]].SetActive(true);
             animator = aiModel[aiModelIndices[aiType]].GetComponent<Animator>();
@@ -69,8 +74,12 @@ public class NewAiBehaviour : MonoBehaviour
 
     private void Update()
     {
-        
+        if (health <= 0)
+            gameObject.SetActive(false);
+
+        Debug.Log(_projectileTag);
     }
+
     // Update is called once per frame
     void LateUpdate()
     {
@@ -92,11 +101,21 @@ public class NewAiBehaviour : MonoBehaviour
             currentState = "Animator reference not set";
         }
     }
+
     private AnimationClip GetCurrentAnimatorClip(Animator anim, int layer)
     {
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(layer);
         return anim.GetCurrentAnimatorClipInfo(layer)[0].clip;
     }
 
-   
+    private void OnCollisionEnter(Collision collision)
+    {
+        NewAiBehaviour _enemyAI = collision.gameObject.GetComponent<NewAiBehaviour>();
+
+        if (collision.gameObject.CompareTag("Team1_Projectile"))
+        {
+            health -= _enemyAI.damage;
+            Debug.Log("Enemy Damaged");
+        }
+    }
 }
